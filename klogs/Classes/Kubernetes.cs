@@ -24,7 +24,7 @@ using klogs.Interfaces;
 
 namespace klogs.Classes
 {
-    class Kubernetes
+    sealed class Kubernetes
     {
         private readonly ICommandable _shell;
 
@@ -35,19 +35,15 @@ namespace klogs.Classes
 
         public string[] GetPodList()
         {
-            return _shell.Run("kubectl get pods --no-headers -o custom-columns=\":metadata.name\"").StdOut
+            // Use "kubectl get pods --no-headers -o custom-columns=\":metadata.name\"" for pod names without type.
+            return ProcessOutput(_shell.Run("kubectl get pods --no-headers -o name"))
                 .Split(new[] { "\r\n", "\n" }, StringSplitOptions.RemoveEmptyEntries);
         }
 
         public string[] GetObjectList()
         {
-            return _shell.Run("kubectl get all --no-headers -o name").StdOut
+            return ProcessOutput(_shell.Run("kubectl get all --no-headers -o name"))
                 .Split(new[] { "\r\n", "\n" }, StringSplitOptions.RemoveEmptyEntries);
-        }
-
-        public string DescribePod(string podName)
-        {
-            return _shell.Run($"kubectl describe pod {podName}").StdOut;
         }
 
         public string DescribeObject(string fullObjectName)
@@ -55,24 +51,24 @@ namespace klogs.Classes
             return _shell.Run($"kubectl describe {fullObjectName}").StdOut;
         }
 
-        public string GetPodLogs(string podName)
-        {
-            return _shell.Run($"kubectl logs {podName} --all-containers").StdOut;
-        }
-
         public string GetObjectLogs(string fullObjectName)
         {
             return _shell.Run($"kubectl logs {fullObjectName} --all-containers").StdOut;
         }
 
-        public string GetPodLogsPrevious(string podName)
-        {
-            return _shell.Run($"kubectl logs -p {podName} --all-containers").StdOut;
-        }
-
         public string GetObjectLogsPrevious(string fullObjectName)
         {
             return _shell.Run($"kubectl logs -p {fullObjectName} --all-containers").StdOut;
+        }
+
+        private static string ProcessOutput(CommandOutput output)
+        {
+            if (output.ExitCode > 0)
+            {
+                throw new StandardErrorException(output.StdErr);
+            }
+
+            return output.StdOut;
         }
     }
 }

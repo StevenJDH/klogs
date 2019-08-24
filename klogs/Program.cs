@@ -24,7 +24,7 @@ using klogs.Classes;
 
 namespace klogs
 {
-    class Program
+    class Program // TODO: Create a console pause before close method.
     {
         private static readonly Kubernetes _k8s = new Kubernetes(new Shell());
 
@@ -32,18 +32,28 @@ namespace klogs
         {
             Console.WriteLine(GetLogo());
 
+            string[] kObjects;
             string path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), 
                 $"klogs_{DateTime.Now.ToString("yyyy-MM-dd_HHmmss")}");
-            var kObjects = _k8s.GetObjectList();
 
-            if (kObjects.Length == 0)
+            try
             {
-                Console.WriteLine("No objects were detected.\n");
+                kObjects = _k8s.GetObjectList();
+
+                if (kObjects.Length == 0)
+                {
+                    Console.WriteLine("No objects were detected.\n");
+                    return;
+                }
+
+                Directory.CreateDirectory(path); // Builds any missing folders in path.
+            }
+            catch (Exception ex) when (ex is StandardErrorException || ex is IOException)
+            {
+                Console.WriteLine($"Error: {ex.Message}\n");
                 return;
             }
-
-            Directory.CreateDirectory(path); // Builds any missing folders in path.
-
+            
             for (int i = 0; i < kObjects.Length; i++)
             {
                 var filename = $"[{kObjects[i].Replace("/", "]-")}";
@@ -68,9 +78,8 @@ namespace klogs
 
             if (args.Length > 0 && args[0].Equals("-a", StringComparison.OrdinalIgnoreCase) && logsDumped)
             {
-                ZipDirectory(path, $"{path}.zip");
-                Directory.Delete(path, recursive: true);
-                Console.WriteLine($"Logs successfully saved to: {path}.zip\n");
+                bool result = ZipDirectory(path, $"{path}.zip", deleteDirectory: true);
+                Console.WriteLine($"Logs successfully saved to: {(result ? $"{path}.zip" : $"{path}")}\n");
             }
             else if (logsDumped)
             {
@@ -78,7 +87,7 @@ namespace klogs
             }
             else
             {
-                Directory.Delete(path, recursive: true);
+                RemoveLogsFolder(path);
                 Console.WriteLine("No logs were dumped.\n");
             }
         }
@@ -99,16 +108,21 @@ Steven Jenkins De Haro_/ |v1.0
 
         private static void DumpLog(string logData, string path, string filename)
         {
-            // Skip log dump if there are no entries.
-            if (String.IsNullOrWhiteSpace(logData) == false)
+            if (String.IsNullOrWhiteSpace(logData))
             {
-                File.WriteAllText(Path.Combine(path, filename), logData);
-                Console.WriteLine("Saved.");
-
+                Console.WriteLine("Empty.");
                 return;
             }
 
-            Console.WriteLine("Empty.");
+            try
+            {
+                File.WriteAllText(Path.Combine(path, filename), logData);
+                Console.WriteLine("Saved.");
+            }
+            catch (IOException ex)
+            {
+                Console.WriteLine($"Error: {ex.Message}");
+            }
         }
 
         private static bool IsDirectoryEmpty(string path)
@@ -116,10 +130,37 @@ Steven Jenkins De Haro_/ |v1.0
             return !Directory.EnumerateFileSystemEntries(path).Any();
         }
 
-        private static void ZipDirectory(string dirPath, string zipPath)
+        private static bool ZipDirectory(string dirPath, string zipPath, bool deleteDirectory = true)
         {
-            ZipFile.CreateFromDirectory(dirPath, zipPath, 
-                compressionLevel: CompressionLevel.Fastest, includeBaseDirectory: false);
+            try
+            {
+                ZipFile.CreateFromDirectory(dirPath, zipPath,
+                    compressionLevel: CompressionLevel.Fastest, includeBaseDirectory: false);
+            }
+            catch (IOException ex)
+            {
+                Console.WriteLine($"Error: {ex.Message}");
+                return false;
+            }
+
+            if (deleteDirectory)
+            {
+                RemoveLogsFolder(dirPath);
+            }
+
+            return true;
+        }
+
+        private static void RemoveLogsFolder(string dirPath)
+        {
+            try
+            {
+                Directory.Delete(dirPath, recursive: true);
+            }
+            catch (IOException ex)
+            {
+                Console.WriteLine($"Error: {ex.Message}");
+            }
         }
     }
 }

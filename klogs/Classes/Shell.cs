@@ -55,9 +55,9 @@ namespace klogs.Classes
 
                 return cmdOutput;
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                Console.WriteLine(e);
+                Console.WriteLine($"Error: {ex.Message}");
                 throw;
             }
         }
