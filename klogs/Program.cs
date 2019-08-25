@@ -24,7 +24,7 @@ using klogs.Classes;
 
 namespace klogs
 {
-    class Program // TODO: Create a console pause before close method.
+    class Program
     {
         private static readonly Kubernetes _k8s = new Kubernetes(new Shell());
 
@@ -43,6 +43,7 @@ namespace klogs
                 if (kObjects.Length == 0)
                 {
                     Console.WriteLine("No objects were detected.\n");
+                    PauseConsoleForExit();
                     return;
                 }
 
@@ -51,6 +52,7 @@ namespace klogs
             catch (Exception ex) when (ex is StandardErrorException || ex is IOException)
             {
                 Console.WriteLine($"Error: {ex.Message}\n");
+                PauseConsoleForExit();
                 return;
             }
             
@@ -90,6 +92,8 @@ namespace klogs
                 RemoveLogsFolder(path);
                 Console.WriteLine("No logs were dumped.\n");
             }
+
+            PauseConsoleForExit();
         }
 
         private static string GetLogo()
@@ -161,6 +165,13 @@ Steven Jenkins De Haro_/ |v1.0
             {
                 Console.WriteLine($"Error: {ex.Message}");
             }
+        }
+
+        private static void PauseConsoleForExit()
+        {
+            Console.Write("Press any key to exit . . .");
+            Console.ReadKey(intercept: true); //Pause before closing workaround.
+            Console.WriteLine("\n");
         }
     }
 }
