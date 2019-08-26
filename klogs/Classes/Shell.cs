@@ -25,13 +25,21 @@ using klogs.Interfaces;
 
 namespace klogs.Classes
 {
+    /// <summary>
+    /// Provides cross-platform shell access to run commands on any host system.
+    /// </summary>
     public class Shell : ICommandable
     {
+        /// <summary>
+        /// Runs a shell command on a host system.
+        /// </summary>
+        /// <param name="command">Command to run.</param>
+        /// <returns>Output from the executed command.</returns>
         public CommandOutput Run(string command)
         {
-            var cmdOutput = new CommandOutput();
+            var cmdOutput = new CommandOutput() { ExitCode = 1 };
             var isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
-
+            
             var startInfo = new ProcessStartInfo()
             {
                 FileName = isWindows ? "cmd.exe" : "/bin/bash",
@@ -47,18 +55,23 @@ namespace klogs.Classes
             {
                 using (var process = Process.Start(startInfo))
                 {
-                    cmdOutput.StdOut = process?.StandardOutput.ReadToEnd().Trim() ?? "-- No Content --";
-                    cmdOutput.StdErr = process?.StandardError.ReadToEnd().Trim() ?? "-- No Content --";
-                    process?.WaitForExit();
-                    cmdOutput.ExitCode = process?.ExitCode ?? 1;
+                    if (process == null)
+                    {
+                        throw new InvalidOperationException("Failed to execute command.");
+                    }
+                    cmdOutput.StdOut = process.StandardOutput.ReadToEnd().Trim();
+                    cmdOutput.StdErr = process.StandardError.ReadToEnd().Trim();
+                    process.WaitForExit();
+                    cmdOutput.ExitCode = process.ExitCode;
                 }
 
                 return cmdOutput;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error: {ex.Message}");
-                throw;
+                cmdOutput.StdErr = ex.Message;
+
+                return cmdOutput;
             }
         }
     }
