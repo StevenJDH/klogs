@@ -72,6 +72,9 @@ namespace klogs
                 Console.Write("\tGetting description...");
                 DumpLog(_k8s.DescribeObject(kObjects[i]), path, $"{filename}.describe.log");
 
+                Console.Write("\tGetting YAML document...");
+                DumpLog(_k8s.GetObjectYAML(kObjects[i]), path, $"{filename}.yaml");
+
                 // Group separator.
                 Console.WriteLine();
             }
@@ -96,6 +99,10 @@ namespace klogs
             PauseConsoleForExit();
         }
 
+        /// <summary>
+        /// Get a logo that is generated with author and version information.
+        /// </summary>
+        /// <returns>Text-based application logo.</returns>
         private static string GetLogo()
         {
             return @"
@@ -110,6 +117,12 @@ Steven Jenkins De Haro_/ |v1.0
                     ".TrimStart();
         }
 
+        /// <summary>
+        /// Dumps the logs collected from the output of a command to file.
+        /// </summary>
+        /// <param name="logData">Output from an executed command containing log info.</param>
+        /// <param name="path">Path to the logs folder.</param>
+        /// <param name="filename">Filename to use for the dumped log.</param>
         private static void DumpLog(string logData, string path, string filename)
         {
             if (String.IsNullOrWhiteSpace(logData))
@@ -129,11 +142,23 @@ Steven Jenkins De Haro_/ |v1.0
             }
         }
 
+        /// <summary>
+        /// Check to see if a directory contains any files or not.
+        /// </summary>
+        /// <param name="path">Path to the directory being check.</param>
+        /// <returns>True if empty, false if not.</returns>
         private static bool IsDirectoryEmpty(string path)
         {
             return !Directory.EnumerateFileSystemEntries(path).Any();
         }
 
+        /// <summary>
+        /// Archives the logs folder as a zip file and removes and removes the folder.
+        /// </summary>
+        /// <param name="dirPath">Path to the logs folder.</param>
+        /// <param name="zipPath">Path to where to save the zip archive.</param>
+        /// <param name="deleteDirectory">True to deleted logs folder after archiving, or false to not.</param>
+        /// <returns>True if successful, or false if not. Logs folder is only deleted if successful.</returns>
         private static bool ZipDirectory(string dirPath, string zipPath, bool deleteDirectory = true)
         {
             try
@@ -155,6 +180,10 @@ Steven Jenkins De Haro_/ |v1.0
             return true;
         }
 
+        /// <summary>
+        /// Removes the logs folder that was created.
+        /// </summary>
+        /// <param name="dirPath">Path to the logs folder.</param>
         private static void RemoveLogsFolder(string dirPath)
         {
             try
@@ -167,6 +196,9 @@ Steven Jenkins De Haro_/ |v1.0
             }
         }
 
+        /// <summary>
+        /// Pauses the console execution before exiting until a key is pressed.
+        /// </summary>
         private static void PauseConsoleForExit()
         {
             Console.Write("Press any key to exit . . .");

@@ -25,8 +25,16 @@ using klogs.Classes;
 
 namespace klogs.Interfaces
 {
-    interface ICommandable
+    /// <summary>
+    /// Provides an interface that can be used to run shell commands via an implementation.
+    /// </summary>
+    public interface ICommandable
     {
+        /// <summary>
+        /// Runs a shell command on a host system.
+        /// </summary>
+        /// <param name="command">Command to run.</param>
+        /// <returns>Output from the executed command.</returns>
         CommandOutput Run(string command);
     }
 }

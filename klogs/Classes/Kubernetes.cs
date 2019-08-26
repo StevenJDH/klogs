@@ -24,15 +24,26 @@ using klogs.Interfaces;
 
 namespace klogs.Classes
 {
-    sealed class Kubernetes
+    /// <summary>
+    /// Provides access to the kubectl command line for the Kubernetes cluster.
+    /// </summary>
+    public sealed class Kubernetes
     {
         private readonly ICommandable _shell;
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="Kubernetes"/>.
+        /// </summary>
+        /// <param name="shell">Decorate instance with a class with shell access.</param>
         public Kubernetes(ICommandable shell)
         {
             _shell = shell;
         }
 
+        /// <summary>
+        /// Gets a list of all the Pods present in the Kubernetes cluster..
+        /// </summary>
+        /// <returns>Command output containing the list of Pods present.</returns>
         public string[] GetPodList()
         {
             // Use "kubectl get pods --no-headers -o custom-columns=\":metadata.name\"" for pod names without type.
@@ -40,35 +51,73 @@ namespace klogs.Classes
                 .Split(new[] { "\r\n", "\n" }, StringSplitOptions.RemoveEmptyEntries);
         }
 
+        /// <summary>
+        /// Gets a list of all the objects present in the Kubernetes cluster.
+        /// </summary>
+        /// <returns>Command output containing the list of all the objects present.</returns>
         public string[] GetObjectList()
         {
             return ProcessOutput(_shell.Run("kubectl get all --no-headers -o name"))
                 .Split(new[] { "\r\n", "\n" }, StringSplitOptions.RemoveEmptyEntries);
         }
 
+        /// <summary>
+        /// Gets the YAML document of the object defined by <paramref name="fullObjectName"/>.
+        /// </summary>
+        /// <param name="fullObjectName">Type and name of object.</param>
+        /// <returns>Standard output from command containing YAML document of object.</returns>
+        public string GetObjectYAML(string fullObjectName)
+        {
+            return _shell.Run($"kubectl get {fullObjectName} -o yaml").StdOut;
+        }
+
+        /// <summary>
+        /// Gets the description of the object defined by <paramref name="fullObjectName"/>.
+        /// </summary>
+        /// <param name="fullObjectName">Type and name of object.</param>
+        /// <returns>Standard output from command containing the object description.</returns>
         public string DescribeObject(string fullObjectName)
         {
             return _shell.Run($"kubectl describe {fullObjectName}").StdOut;
         }
 
+        /// <summary>
+        /// Gets the logs from the current instance of the object defined by <paramref name="fullObjectName"/>
+        /// if present.
+        /// </summary>
+        /// <param name="fullObjectName">Type and name of object.</param>
+        /// <returns>Standard output from command containing log information if present.</returns>
         public string GetObjectLogs(string fullObjectName)
         {
             return _shell.Run($"kubectl logs {fullObjectName} --all-containers").StdOut;
         }
 
+        /// <summary>
+        /// Gets the logs from the previous instances of the object defined by <paramref name="fullObjectName"/>
+        /// if present.
+        /// </summary>
+        /// <param name="fullObjectName">Type and name of object.</param>
+        /// <returns>Standard output from command containing previous log information if present.</returns>
         public string GetObjectLogsPrevious(string fullObjectName)
         {
             return _shell.Run($"kubectl logs -p {fullObjectName} --all-containers").StdOut;
         }
 
-        private static string ProcessOutput(CommandOutput output)
+        /// <summary>
+        /// Processes the command output to check if the stream was redirected to the stream to the
+        /// standard error output device, and if so, throws it as an exception.
+        /// </summary>
+        /// <param name="cmdOutput">Output from an executed command.</param>
+        /// <returns>Text from the standard output device.</returns>
+        /// <exception cref="StandardErrorException">Text from the standard error output device.</exception>
+        private static string ProcessOutput(CommandOutput cmdOutput)
         {
-            if (output.ExitCode > 0)
+            if (cmdOutput.ExitCode > 0)
             {
-                throw new StandardErrorException(output.StdErr);
+                throw new StandardErrorException(cmdOutput.StdErr);
             }
 
-            return output.StdOut;
+            return cmdOutput.StdOut;
         }
     }
 }

@@ -22,10 +22,25 @@ using System.Text;
 
 namespace klogs.Classes
 {
+    /// <summary>
+    /// Contains the output and status information for an executed command.
+    /// </summary>
     public class CommandOutput
     {
+        /// <summary>
+        /// Contains the output from the standard error output device.
+        /// </summary>
         public string StdOut { get; set; }
+
+        /// <summary>
+        /// Contains the output from the standard error output device. Check <see cref="ExitCode"/> to see
+        /// if the output stream has been redirected here.
+        /// </summary>
         public string StdErr { get; set; }
+
+        /// <summary>
+        /// Contains the status of the executed command with 0 meaning successful and 1 or more meaning it failed.
+        /// </summary>
         public int ExitCode { get; set; }
     }
 
