@@ -3,6 +3,11 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp2.2</TargetFramework>
+    <Company>Steven Jenkins De Haro</Company>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <Copyright>Copyright © 2019</Copyright>
+    <Authors>Steven Jenkins De Haro</Authors>
+    <Description>Automates the dumping of various pieces of information about a Kubernetes cluster to support troubleshooting efforts.</Description>
   </PropertyGroup>
 
 </Project>
