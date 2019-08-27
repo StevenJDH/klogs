@@ -20,6 +20,7 @@ using System;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Text;
 using klogs.Classes;
 
 namespace klogs
@@ -31,10 +32,31 @@ namespace klogs
         static void Main(string[] args)
         {
             Console.WriteLine(GetLogo());
-
+            
             string[] kObjects;
+            bool archiveLogs = false;
             string path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), 
                 $"klogs_{DateTime.Now.ToString("yyyy-MM-dd_HHmmss")}");
+            
+            // Checks command line options being passed.
+            if (args.Length > 0)
+            {
+                if (args[0].Equals("-a", StringComparison.OrdinalIgnoreCase))
+                {
+                    archiveLogs = true;
+                }
+                else if (new [] {"-?", "-h", "-H"}.Any(o => o == args[0]))
+                {
+                    PrintUsageInfo();
+                    return;
+                }
+                else
+                {
+                    Console.WriteLine("Error: Invalid command line option provided.\n");
+                    PrintUsageInfo();
+                    return;
+                }
+            }
 
             try
             {
@@ -81,10 +103,10 @@ namespace klogs
 
             bool logsDumped = !IsDirectoryEmpty(path);
 
-            if (args.Length > 0 && args[0].Equals("-a", StringComparison.OrdinalIgnoreCase) && logsDumped)
+            if (archiveLogs && logsDumped)
             {
                 bool result = ZipDirectory(path, $"{path}.zip", deleteDirectory: true);
-                Console.WriteLine($"Logs successfully saved to: {(result ? $"{path}.zip" : $"{path}")}\n");
+                Console.WriteLine($"Logs successfully saved to: {(result ? $"{path}.zip" : path)}\n");
             }
             else if (logsDumped)
             {
@@ -204,6 +226,26 @@ Steven Jenkins De Haro_/ |v1.0
             Console.Write("Press any key to exit . . .");
             Console.ReadKey(intercept: true); //Pause before closing workaround.
             Console.WriteLine("\n");
+        }
+
+        /// <summary>
+        /// Displays usage information for the application.
+        /// </summary>
+        private static void PrintUsageInfo()
+        {
+            var sb = new StringBuilder();
+
+            sb.AppendLine("[--Usage--]");
+            sb.AppendLine("Universal: dotnet klogs.dll [-a | -h]");
+            sb.AppendLine("    Linux: ./klogs [-a | -h]");
+            sb.AppendLine("  Windows: klogs.exe [-a | -h]");
+            sb.AppendLine("    macOS: open klogs [-a | -h]\n");
+            sb.AppendLine("Options:");
+            sb.AppendLine("  -a, -A \t Archives the dumped logs to a Zip file.");
+            sb.AppendLine("  -?, -h, -H \t Displays this usage information.\n");
+            Console.WriteLine(sb.ToString());
+
+            PauseConsoleForExit();
         }
     }
 }
