@@ -1,4 +1,9 @@
 # klogs (Kubernetes Logs)
+
+![GitHub All Releases](https://img.shields.io/github/downloads/StevenJDH/klogs/total)
+![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/v/release/StevenJDH/klogs?include_prereleases)
+![GitHub](https://img.shields.io/github/license/StevenJDH/klogs)
+
 klogs, pronounced "kelloggs" like the cereal, is a tool that automates the dumping of various pieces of information about a Kubernetes cluster to support troubleshooting efforts with different issues being encountered. Many objects are supported, and this tool can run on any platform supported by Kubernetes and the .Net Core Framework.
 
 ![klogs demo](klogs-fast.gif "Demo")
@@ -7,7 +12,7 @@ Releases: [https://github.com/StevenJDH/klogs/releases](https://github.com/Steve
 
 ## Features
 * Dumps YAML documents, current and previous instance logs, descriptions with events, and anything else useful for troubleshooting.
-* Supports many objects such as pods, services, deployments, replicasets, statefulset, cronjob.batch, etc.
+* Supports many objects such as pods, services, deployments, replicasets, statefulset, cronjobs, etc.
 * Optionally dumps logs to a Zip file instead of a folder for easier sharing.
 * Cross-platform support for Linux, Windows, macOS, and any other platform supporting the .NET Core Framework.
 
@@ -39,9 +44,6 @@ klogs is distributed in the hope that it will be useful, but WITHOUT ANY WARRANT
 ## Do you have any questions?
 Many commonly asked questions are answered in the FAQ:
 [https://github.com/StevenJDH/klogs/wiki/FAQ](https://github.com/StevenJDH/klogs/wiki/FAQ)
-
-## Need to contact me?
-I can be reached here directly at [https://21.co/stevenjdh](https://21.co/stevenjdh "Contact Page")
 
 ## Want to show your support?
 

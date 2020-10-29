@@ -64,15 +64,13 @@ namespace klogs.Classes
                     process.WaitForExit();
                     cmdOutput.ExitCode = process.ExitCode;
                 }
-
-                return cmdOutput;
             }
             catch (Exception ex)
             {
                 cmdOutput.StdErr = ex.Message;
-
-                return cmdOutput;
             }
+
+            return cmdOutput;
         }
     }
 }
